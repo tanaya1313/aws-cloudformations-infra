@@ -1,0 +1,6 @@
+name: Deploy to infrastructure
+
+on:
+  push:
+    branches:
+      - stage 

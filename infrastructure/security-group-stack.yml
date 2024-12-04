@@ -1,0 +1,35 @@
+Parameters:
+  Environment:
+    Type: String
+  Project:
+    Type: String
+
+Resources:
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "Security Group for ${Project} app in ${Environment}"
+      VpcId: 
+        Fn::ImportValue: !Sub "${Environment}-${Project}-VPCId"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: "tcp"
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0  # Open for Systems Manager (SSM)
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: 0.0.0.0/0       
+      Tags:
+        - Key: Name
+          Value: !Sub "${Environment}-${Project}-sg"
+
+Outputs:
+  SecurityGroupId:
+    Description: "Security Group ID for ${Environment} environment"
+    Value: !Ref AppSecurityGroup
+    Export:
+      Name: !Sub "${Environment}-${Project}-SGId"

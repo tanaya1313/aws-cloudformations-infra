@@ -1,0 +1,130 @@
+Description:  This template deploys a VPC, with a pair of public subnets spread
+  across two Availability Zones. It deploys an internet gateway, with a default
+  route on the public subnets.
+
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment for the resources (e.g., dev, prod)
+    Default: staging  
+  Project:
+    Type: String
+    Description: The project name (e.g., MyProject)
+  VpcCIDR:
+    Type: String
+    Description: CIDR block for the VPC    
+
+Resources:
+
+  MyVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-${Project}-VPC'
+        - Key: Environment
+          Value: !Ref Environment
+
+
+  MyPublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: !Ref PublicSubnet1CIDR
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-${Project}-PublicSubnet1'
+        - Key: Environment
+          Value: !Ref Environment
+  MyPublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: !Ref PublicSubnet2CIDR
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      MapPublicIpOnLaunch: 'true'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-${Project}-PublicSubnet2'
+        - Key: Environment
+          Value: !Ref Environment        
+
+  MyInternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-${Project}-IGW'
+        - Key: Environment
+          Value: !Ref Environment
+
+
+  AttachIGW:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref MyInternetGateway
+
+
+  MyPublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref MyVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-${Project}-PublicRouteTable'
+        - Key: Environment
+          Value: !Ref Environment
+
+ 
+  MyPublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: AttachIGW
+    Properties:
+      RouteTableId: !Ref MyPublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref MyInternetGateway
+
+  # Associate Public Subnet with the Route Table
+  MyPublicSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref MyPublicSubnet
+      RouteTableId: !Ref MyPublicRouteTable
+
+Outputs:
+  VPCId:
+    Description: "VPC ID"
+    Value: !Ref MyVPC
+    Export:
+      Name: !Sub "${Environment}-${Project}-VPCId"
+
+  PublicSubnetId1:
+    Description: "Public Subnet 1 ID"
+    Value: !Ref MyPublicSubnet1
+    Export:
+      Name: !Sub "${Environment}-${Project}-PublicSubnetId1"
+
+  PublicSubnetId2:
+    Description: "Public Subnet 2 ID"
+    Value: !Ref MyPublicSubnet2
+    Export:
+      Name: !Sub "${Environment}-${Project}-PublicSubnetId2"
+
+  InternetGatewayId:
+    Description: "Internet Gateway ID"
+    Value: !Ref MyInternetGateway
+    Export:
+      Name: !Sub "${Environment}-${Project}-InternetGatewayId"
+
+  RouteTableId:
+    Description: "Public Route Table ID"
+    Value: !Ref MyPublicRouteTable
+    Export:
+      Name: !Sub "${Environment}-${Project}-RouteTableId"
