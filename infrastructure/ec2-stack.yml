@@ -50,8 +50,8 @@ Resources:
       ImageId: ami-xxxxxxxx  
       KeyName: !Ref KeyName   
       SecurityGroupIds:
-        - !Sub Fn::ImportValue MySecurityGroupId  
-      SubnetId: !Sub Fn::ImportValue MyPublicSubnetId1  
+        - !Sub Fn::ImportValue "${Environment}-${Project}-SGId"  
+      SubnetId: !Sub Fn::ImportValue "${Environment}-${Project}-PublicSubnetId1"  
       IamInstanceProfile: 
         Ref: EC2InstanceRole  
       Tags:
