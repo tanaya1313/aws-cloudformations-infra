@@ -14,6 +14,12 @@ Parameters:
   VpcCIDR:
     Type: String
     Description: CIDR block for the VPC    
+  PublicSubnet1CIDR:
+    Type: String
+    Description: CIDR block for the subnet1     
+  PublicSubnet2CIDR:
+    Type: String
+    Description: CIDR block for the subnet2     
 
 Resources:
 
@@ -92,10 +98,16 @@ Resources:
       GatewayId: !Ref MyInternetGateway
 
   # Associate Public Subnet with the Route Table
-  MyPublicSubnetRouteTableAssociation:
+  MyPublicSubnet1RouteTableAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
-      SubnetId: !Ref MyPublicSubnet
+      SubnetId: !Ref MyPublicSubnet1
+      RouteTableId: !Ref MyPublicRouteTable
+
+  MyPublicSubnet2RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref MyPublicSubnet2
       RouteTableId: !Ref MyPublicRouteTable
 
 Outputs:
