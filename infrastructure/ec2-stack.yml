@@ -48,7 +48,6 @@ Resources:
     Properties:
       InstanceType: t2.micro  
       ImageId: ami-xxxxxxxx  
-      KeyName: !Ref KeyName   
       SecurityGroupIds:
         - !Sub Fn::ImportValue "${Environment}-${Project}-SGId"  
       SubnetId: !Sub Fn::ImportValue "${Environment}-${Project}-PublicSubnetId1"  
